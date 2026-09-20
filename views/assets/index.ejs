@@ -98,7 +98,7 @@
                   <a href="/assets/<%= asset._id %>/edit" class="btn btn-sm btn-secondary" title="Edit Asset">
                     Edit
                   </a>
-                  <form action="/assets/<%= asset._id %>/delete" method="POST" class="inline-form" onsubmit="return confirm('Are you sure you want to delete asset \'<%= asset.name %>\' (<%= asset.assetTag %>)?');">
+                  <form action="/assets/<%= asset._id %>/delete" method="POST" class="inline-form" onsubmit="return confirm('Are you sure you want to delete this asset?');">
                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Asset">
                       Delete
                     </button>

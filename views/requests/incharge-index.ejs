@@ -115,7 +115,7 @@
                   </a>
 
                   <% if (reqItem.status === 'Pending') { %>
-                    <form action="/lab-incharge/requests/<%= reqItem._id %>/approve" method="POST" class="inline-form" onsubmit="return confirm('Approve request for <%= reqItem.quantity %>x \'<%= reqItem.asset ? reqItem.asset.name : '' %>\'?');">
+                    <form action="/lab-incharge/requests/<%= reqItem._id %>/approve" method="POST" class="inline-form" onsubmit="return confirm('Approve this equipment request?');">
                       <button type="submit" class="btn btn-sm btn-primary" title="Approve Request">
                         Approve
                       </button>
@@ -126,7 +126,7 @@
                       </button>
                     </form>
                   <% } else if (reqItem.status === 'Approved') { %>
-                    <form action="/lab-incharge/requests/<%= reqItem._id %>/issue" method="POST" class="inline-form" onsubmit="return confirm('Issue <%= reqItem.quantity %> unit(s) of \'<%= reqItem.asset ? reqItem.asset.name : '' %>\' to <%= reqItem.requester ? reqItem.requester.name : '' %>?');">
+                    <form action="/lab-incharge/requests/<%= reqItem._id %>/issue" method="POST" class="inline-form" onsubmit="return confirm('Issue equipment to requester?');">
                       <button type="submit" class="btn btn-sm btn-success" title="Issue Equipment">
                         Issue
                       </button>
