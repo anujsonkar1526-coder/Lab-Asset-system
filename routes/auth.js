@@ -165,7 +165,7 @@ router.post('/login', async (req, res) => {
     console.error('Login Error:', err);
     res.render('auth/login', {
       title: 'Login - Lab Equipment & Asset System',
-      error: 'An unexpected error occurred. Please try again.',
+      error: err.message || 'An unexpected error occurred. Please try again.',
       success: null,
       formData: { email: req.body.email },
     });
