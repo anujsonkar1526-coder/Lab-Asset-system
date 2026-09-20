@@ -31,6 +31,9 @@ mongoose
   });
 
 // -------------------------------------------------------------
+// Trust reverse proxy in production (Render, Heroku, etc.)
+app.set('trust proxy', 1);
+
 // View Engine & Static Files Setup
 // -------------------------------------------------------------
 app.set('view engine', 'ejs');
@@ -114,6 +117,6 @@ app.use((err, req, res, next) => {
 // -------------------------------------------------------------
 // Start Server
 // -------------------------------------------------------------
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
