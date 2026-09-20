@@ -1,0 +1,125 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h1 class="page-title">📦 Institutional Asset Inventory</h1>
+    <p class="page-subtitle">Centralized database of laboratory instruments, stock allocations, and operating conditions.</p>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="btn btn-secondary" onclick="exportTableToCSV('assets-table', 'lab-assets-inventory.csv')">
+      📥 Export CSV
+    </button>
+    <a href="/assets/new" class="btn btn-primary">
+      <span>➕ Add New Asset</span>
+    </a>
+  </div>
+</div>
+
+<div class="card table-card">
+  <% if (assets && assets.length > 0) { %>
+    <!-- Real-time Live Filter Toolbar -->
+    <div class="table-toolbar">
+      <div class="table-title-group">
+        <span class="table-title">Registered Assets</span>
+        <span class="table-count-badge"><%= assets.length %> items</span>
+      </div>
+      <div class="table-actions-group">
+        <div class="table-search-box">
+          <span class="search-icon-placeholder">🔍</span>
+          <input
+            type="text"
+            class="table-search-input"
+            data-table-target="assets-table"
+            placeholder="Search by tag, name, lab..."
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table" id="assets-table">
+        <thead>
+          <tr>
+            <th>Asset Tag</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Lab Location</th>
+            <th>Condition</th>
+            <th class="text-center">Total Stock</th>
+            <th class="text-center">Available</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% assets.forEach(asset => { %>
+            <tr>
+              <td>
+                <span class="tag-badge" onclick="copyToClipboard('<%= asset.assetTag %>', this)" title="Click to copy tag" style="cursor: pointer;">
+                  <%= asset.assetTag %> 📋
+                </span>
+              </td>
+              <td>
+                <strong><%= asset.name %></strong>
+              </td>
+              <td>
+                <span class="category-pill"><%= asset.category %></span>
+              </td>
+              <td>
+                <span>📍 <%= asset.lab %></span>
+              </td>
+              <td>
+                <% if (asset.condition === 'OK') { %>
+                  <span class="badge badge-condition-ok">
+                    <span class="badge-dot"></span> OK
+                  </span>
+                <% } else if (asset.condition === 'Damaged') { %>
+                  <span class="badge badge-condition-damaged">
+                    <span class="badge-dot"></span> Damaged
+                  </span>
+                <% } else if (asset.condition === 'Lost') { %>
+                  <span class="badge badge-condition-lost">
+                    <span class="badge-dot"></span> Lost
+                  </span>
+                <% } else if (asset.condition === 'Maintenance') { %>
+                  <span class="badge badge-condition-maintenance">
+                    <span class="badge-dot"></span> Maintenance
+                  </span>
+                <% } %>
+              </td>
+              <td class="text-center font-bold"><%= asset.totalQuantity %></td>
+              <td class="text-center font-bold <%= asset.availableQuantity === 0 ? 'text-danger' : 'text-success' %>">
+                <%= asset.availableQuantity %> / <%= asset.totalQuantity %>
+              </td>
+              <td class="text-right">
+                <div class="action-btn-group">
+                  <a href="/assets/<%= asset._id %>" class="btn btn-sm btn-outline-primary" title="View Details">
+                    View
+                  </a>
+                  <a href="/assets/<%= asset._id %>/edit" class="btn btn-sm btn-secondary" title="Edit Asset">
+                    Edit
+                  </a>
+                  <form action="/assets/<%= asset._id %>/delete" method="POST" class="inline-form" onsubmit="return confirm('Are you sure you want to delete asset \'<%= asset.name %>\' (<%= asset.assetTag %>)?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Asset">
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon">📦</div>
+      <h3>No Assets Found</h3>
+      <p>There are no laboratory assets registered yet. Get started by adding your first asset.</p>
+      <a href="/assets/new" class="btn btn-primary" style="margin-top: 1rem;">
+        Add First Asset
+      </a>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>

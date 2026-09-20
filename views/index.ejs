@@ -1,0 +1,137 @@
+<%- include('partials/header') %>
+
+<!-- Hero Banner Section -->
+<section class="hero-section">
+  <div class="hero-card">
+    <div class="hero-header">
+      <div class="hero-badge">
+        <span>⚡</span>
+        <span>Institutional Laboratory Operating System</span>
+      </div>
+      <h1 class="hero-title">
+        Lab Equipment &amp; Asset <span class="gradient-text">Issue-Return</span> Tracking System
+      </h1>
+      <p class="hero-subtitle">
+        A high-precision platform designed for college laboratories to streamline equipment reservations, automate approvals, track real-time stock, and audit asset lifecycles.
+      </p>
+    </div>
+
+    <% if (user) { %>
+      <!-- Authenticated User Dashboard Quick Access Card -->
+      <div class="user-status-card">
+        <div class="user-info-row">
+          <div class="user-avatar-circle">
+            <%= user.name.charAt(0).toUpperCase() %>
+          </div>
+          <div>
+            <h2 class="welcome-heading">Welcome back, <%= user.name %>!</h2>
+            <p class="user-meta">
+              <strong>Account:</strong> <%= user.email %> &bull;
+              <strong>Privilege:</strong> 
+              <span class="badge badge-<%= user.role %>">
+                <span class="badge-dot"></span>
+                <%= user.role.replace('_', ' ').toUpperCase() %>
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div class="status-summary-box">
+          <div class="status-item">
+            <span class="status-icon">🛡️</span>
+            <div>
+              <strong>Authorized Portal Access</strong>
+              <p>
+                <% if (user.role === 'admin') { %>
+                  Full administrative authority: Asset CRUD inventory, real-time analytics, equipment audits, maintenance logs, and damage/loss reporting.
+                <% } else if (user.role === 'lab_incharge') { %>
+                  Departmental authority: Review pending issue requests, approve/reject allocations, issue equipment, and conduct return condition inspections.
+                <% } else { %>
+                  Requester access: Browse live available laboratory equipment, raise issue requests with expected return dates, and track personal loan status.
+                <% } %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <% if (user.role === 'admin') { %>
+            <a href="/dashboard/admin" class="btn btn-primary">📊 Admin Analytics Dashboard</a>
+            <a href="/assets" class="btn btn-outline-primary">📦 Asset Inventory CRUD</a>
+            <a href="/maintenance" class="btn btn-secondary">🔧 Maintenance Logs</a>
+          <% } else if (user.role === 'lab_incharge') { %>
+            <a href="/dashboard/lab-incharge" class="btn btn-primary">📊 Lab In-charge Dashboard</a>
+            <a href="/lab-incharge/requests" class="btn btn-outline-primary">📋 Manage Requests &amp; Returns</a>
+          <% } else if (user.role === 'requester') { %>
+            <a href="/dashboard/requester" class="btn btn-primary">📊 Student/Staff Dashboard</a>
+            <a href="/requests" class="btn btn-outline-primary">🔬 Browse Available Equipment</a>
+            <a href="/requests/my" class="btn btn-secondary">📋 My Loan Requests</a>
+          <% } %>
+          <a href="/auth/logout" class="btn btn-outline-danger">Sign Out</a>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- Unauthenticated Call to Action -->
+      <div class="cta-actions">
+        <a href="/auth/login" class="btn btn-primary btn-lg">
+          <span>Sign In to Lab Portal</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+        <a href="/auth/register" class="btn btn-outline-primary btn-lg">
+          <span>Student / Staff Registration</span>
+        </a>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<!-- System Portals & Roles -->
+<section class="features-section" style="margin-bottom: 2.5rem;">
+  <h2 class="section-title">Institutional Roles &amp; Portals</h2>
+  <div class="workflow-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+    <div class="workflow-card">
+      <div class="step-number" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">🛡️</div>
+      <h3>Administrator Portal</h3>
+      <p>Complete lifecycle management: Add, edit, and audit lab assets, view live cross-department KPIs, review damaged/lost incidents, and log maintenance services.</p>
+    </div>
+    <div class="workflow-card">
+      <div class="step-number" style="background: linear-gradient(135deg, #0284c7, #38bdf8);">👨‍🏫</div>
+      <h3>Lab In-Charge Portal</h3>
+      <p>Approve or reject equipment requests, issue apparatus (automatically decrementing live inventory), monitor active loans, and record returns with condition checks (OK, Damaged, Lost).</p>
+    </div>
+    <div class="workflow-card">
+      <div class="step-number" style="background: linear-gradient(135deg, #059669, #10b981);">🎓</div>
+      <h3>Student &amp; Staff Requester</h3>
+      <p>Search real-time inventory for available laboratory equipment, specify quantity and research purpose, submit issue requests with return dates, and track request approvals.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Core Operational Workflow -->
+<section class="features-section">
+  <h2 class="section-title">Equipment Issue &amp; Return Lifecycle</h2>
+  <div class="workflow-grid">
+    <div class="workflow-card">
+      <div class="step-number">1</div>
+      <h3>Catalog Discovery</h3>
+      <p>Students and faculty search available equipment by category, specifications, and lab location.</p>
+    </div>
+    <div class="workflow-card">
+      <div class="step-number">2</div>
+      <h3>Issue Request</h3>
+      <p>Specify quantity, academic purpose, and expected return date to raise a formal loan request.</p>
+    </div>
+    <div class="workflow-card">
+      <div class="step-number">3</div>
+      <h3>In-Charge Review</h3>
+      <p>Lab In-charge verifies availability, approves the request, and issues the equipment to update stock.</p>
+    </div>
+    <div class="workflow-card">
+      <div class="step-number">4</div>
+      <h3>Inspection &amp; Return</h3>
+      <p>Equipment is physically returned and inspected for condition (OK restores stock; Damaged/Lost triggers audit).</p>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

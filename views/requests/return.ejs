@@ -1,0 +1,59 @@
+<%- include('../partials/header') %>
+
+<div class="form-container-card">
+  <div class="form-header">
+    <a href="/lab-incharge/requests/<%= request._id %>" class="back-link">&larr; Back to Request Review</a>
+    <h1 class="form-title">📥 Record Equipment Return</h1>
+    <p class="form-subtitle">Inspect item condition upon physical return and update inventory accordingly.</p>
+  </div>
+
+  <!-- Return Summary Card -->
+  <div class="selected-asset-box">
+    <div class="selected-asset-header">
+      <div>
+        <span class="tag-badge"><%= request.asset ? request.asset.assetTag : 'N/A' %></span>
+        <h2 class="selected-asset-title"><%= request.asset ? request.asset.name : 'Equipment' %></h2>
+      </div>
+      <span class="badge badge-status-issued">Currently Issued</span>
+    </div>
+    <div class="selected-asset-meta">
+      <span><strong>Requester:</strong> <%= request.requester ? request.requester.name : 'Unknown' %></span>
+      <span><strong>Quantity Issued:</strong> <span class="font-bold"><%= request.quantity %> units</span></span>
+      <span><strong>Expected Return:</strong> <%= new Date(request.expectedReturnDate).toLocaleDateString() %></span>
+    </div>
+  </div>
+
+  <!-- Return Process Form -->
+  <form action="/lab-incharge/requests/<%= request._id %>/return" method="POST" class="asset-form">
+    <div class="form-group">
+      <label for="returnCondition" class="form-label">
+        Equipment Return Condition <span class="required">*</span>
+      </label>
+      <select id="returnCondition" name="returnCondition" class="form-control" required>
+        <option value="OK">OK — Operational & Functional (Restores available stock)</option>
+        <option value="Damaged">Damaged — Needs Repair / Non-operational (Stock NOT restored)</option>
+        <option value="Lost">Lost — Unaccounted / Missing (Stock NOT restored)</option>
+      </select>
+      <small class="form-text">Choose the physical condition assessed during handback.</small>
+    </div>
+
+    <!-- Inventory Impact Guidance Box -->
+    <div class="condition-impact-box">
+      <h3 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--dark);">
+        💡 Inventory Stock Rules:
+      </h3>
+      <ul style="font-size: 0.85rem; color: var(--secondary); margin-left: 1.25rem; line-height: 1.5;">
+        <li><strong>OK:</strong> Adds <%= request.quantity %> unit(s) back into available inventory.</li>
+        <li><strong>Damaged:</strong> Available units will NOT increase. Asset marked as Damaged.</li>
+        <li><strong>Lost:</strong> Available units will NOT increase. Asset marked as Lost.</li>
+      </ul>
+    </div>
+
+    <div class="form-actions">
+      <a href="/lab-incharge/requests/<%= request._id %>" class="btn btn-outline-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary">Confirm & Record Return</button>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

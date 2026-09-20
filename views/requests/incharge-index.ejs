@@ -1,0 +1,155 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h1 class="page-title">📋 Equipment Issue &amp; Return Management</h1>
+    <p class="page-subtitle">Review incoming loan requests, approve/reject allocations, issue equipment, and conduct return condition inspections.</p>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="btn btn-secondary" onclick="exportTableToCSV('requests-management-table', 'equipment-requests-log.csv')">
+      📥 Export CSV Log
+    </button>
+    <a href="/dashboard/lab-incharge" class="btn btn-outline-primary">
+      <span>📊 In-Charge Dashboard</span>
+    </a>
+  </div>
+</div>
+
+<!-- Modern Filter Pills -->
+<div class="filter-tabs">
+  <a href="/lab-incharge/requests" class="filter-tab <%= !activeFilter ? 'active' : '' %>">All Requests</a>
+  <a href="/lab-incharge/requests?status=Pending" class="filter-tab <%= activeFilter === 'Pending' ? 'active' : '' %>">⏳ Pending Review</a>
+  <a href="/lab-incharge/requests?status=Approved" class="filter-tab <%= activeFilter === 'Approved' ? 'active' : '' %>">✅ Approved</a>
+  <a href="/lab-incharge/requests?status=Issued" class="filter-tab <%= activeFilter === 'Issued' ? 'active' : '' %>">📤 Issued</a>
+  <a href="/lab-incharge/requests?status=Overdue" class="filter-tab <%= activeFilter === 'Overdue' ? 'active' : '' %>">⚠️ Overdue</a>
+  <a href="/lab-incharge/requests?status=Returned" class="filter-tab <%= activeFilter === 'Returned' ? 'active' : '' %>">📥 Returned</a>
+  <a href="/lab-incharge/requests?status=Rejected" class="filter-tab <%= activeFilter === 'Rejected' ? 'active' : '' %>">❌ Rejected</a>
+</div>
+
+<div class="card table-card">
+  <% if (requests && requests.length > 0) { %>
+    <!-- Live Search Toolbar -->
+    <div class="table-toolbar">
+      <div class="table-title-group">
+        <span class="table-title">Request Queue</span>
+        <span class="table-count-badge"><%= requests.length %> requests</span>
+      </div>
+      <div class="table-actions-group">
+        <div class="table-search-box">
+          <span class="search-icon-placeholder">🔍</span>
+          <input
+            type="text"
+            class="table-search-input"
+            data-table-target="requests-management-table"
+            placeholder="Search student, item, tag..."
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table" id="requests-management-table">
+        <thead>
+          <tr>
+            <th>Requester</th>
+            <th>Equipment</th>
+            <th>Tag</th>
+            <th class="text-center">Qty</th>
+            <th>Purpose</th>
+            <th>Request Date</th>
+            <th>Expected Return</th>
+            <th>Status</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% const now = new Date(); %>
+          <% requests.forEach(reqItem => { %>
+            <% const isOverdue = reqItem.status === 'Issued' && new Date(reqItem.expectedReturnDate) < now; %>
+            <tr class="<%= isOverdue ? 'row-overdue' : '' %>">
+              <td>
+                <strong><%= reqItem.requester ? reqItem.requester.name : 'Unknown' %></strong>
+                <small class="text-muted d-block"><%= reqItem.requester ? reqItem.requester.email : '' %></small>
+              </td>
+              <td>
+                <strong><%= reqItem.asset ? reqItem.asset.name : 'Unknown Equipment' %></strong>
+              </td>
+              <td>
+                <span class="tag-badge"><%= reqItem.asset ? reqItem.asset.assetTag : 'N/A' %></span>
+              </td>
+              <td class="text-center font-bold"><%= reqItem.quantity %></td>
+              <td>
+                <span class="truncate-text" title="<%= reqItem.purpose %>">
+                  <%= reqItem.purpose %>
+                </span>
+              </td>
+              <td><%= new Date(reqItem.requestDate).toLocaleDateString() %></td>
+              <td>
+                <%= new Date(reqItem.expectedReturnDate).toLocaleDateString() %>
+                <% if (isOverdue) { %>
+                  <small class="text-danger font-bold d-block">⚠️ Past Due</small>
+                <% } %>
+              </td>
+              <td>
+                <% if (isOverdue) { %>
+                  <span class="badge badge-status-overdue"><span class="badge-dot"></span> Overdue</span>
+                <% } else if (reqItem.status === 'Pending') { %>
+                  <span class="badge badge-status-pending"><span class="badge-dot"></span> Pending</span>
+                <% } else if (reqItem.status === 'Approved') { %>
+                  <span class="badge badge-status-approved"><span class="badge-dot"></span> Approved</span>
+                <% } else if (reqItem.status === 'Issued') { %>
+                  <span class="badge badge-status-issued"><span class="badge-dot"></span> Issued</span>
+                <% } else if (reqItem.status === 'Returned') { %>
+                  <span class="badge badge-status-returned"><span class="badge-dot"></span> Returned</span>
+                  <% if (reqItem.returnCondition) { %>
+                    <small class="d-block text-muted">(<%= reqItem.returnCondition %>)</small>
+                  <% } %>
+                <% } else if (reqItem.status === 'Rejected') { %>
+                  <span class="badge badge-status-rejected"><span class="badge-dot"></span> Rejected</span>
+                <% } %>
+              </td>
+              <td class="text-right">
+                <div class="action-btn-group">
+                  <a href="/lab-incharge/requests/<%= reqItem._id %>" class="btn btn-sm btn-outline-primary" title="View Details">
+                    View
+                  </a>
+
+                  <% if (reqItem.status === 'Pending') { %>
+                    <form action="/lab-incharge/requests/<%= reqItem._id %>/approve" method="POST" class="inline-form" onsubmit="return confirm('Approve request for <%= reqItem.quantity %>x \'<%= reqItem.asset ? reqItem.asset.name : '' %>\'?');">
+                      <button type="submit" class="btn btn-sm btn-primary" title="Approve Request">
+                        Approve
+                      </button>
+                    </form>
+                    <form action="/lab-incharge/requests/<%= reqItem._id %>/reject" method="POST" class="inline-form" onsubmit="return confirm('Reject this request?');">
+                      <button type="submit" class="btn btn-sm btn-outline-danger" title="Reject Request">
+                        Reject
+                      </button>
+                    </form>
+                  <% } else if (reqItem.status === 'Approved') { %>
+                    <form action="/lab-incharge/requests/<%= reqItem._id %>/issue" method="POST" class="inline-form" onsubmit="return confirm('Issue <%= reqItem.quantity %> unit(s) of \'<%= reqItem.asset ? reqItem.asset.name : '' %>\' to <%= reqItem.requester ? reqItem.requester.name : '' %>?');">
+                      <button type="submit" class="btn btn-sm btn-success" title="Issue Equipment">
+                        Issue
+                      </button>
+                    </form>
+                  <% } else if (reqItem.status === 'Issued') { %>
+                    <a href="/lab-incharge/requests/<%= reqItem._id %>/return" class="btn btn-sm btn-secondary" title="Record Return">
+                      Return
+                    </a>
+                  <% } %>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon">📁</div>
+      <h3>No Requests Found</h3>
+      <p>There are no equipment requests matching the selected filter criteria.</p>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>

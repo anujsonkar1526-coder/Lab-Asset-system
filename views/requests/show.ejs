@@ -1,0 +1,102 @@
+<%- include('../partials/header') %>
+
+<div class="details-container">
+  <div class="details-header">
+    <a href="/requests/my" class="back-link">&larr; Back to My Requests</a>
+    <div class="header-action-row">
+      <div>
+        <span class="tag-badge-lg">Request #<%= request._id.toString().slice(-6).toUpperCase() %></span>
+        <h1 class="details-title"><%= request.asset ? request.asset.name : 'Equipment Request' %></h1>
+      </div>
+      <div>
+        <% if (request.status === 'Pending') { %>
+          <span class="badge badge-status-pending badge-lg">Status: Pending Review</span>
+        <% } else if (request.status === 'Approved') { %>
+          <span class="badge badge-status-approved badge-lg">Status: Approved</span>
+        <% } else if (request.status === 'Issued') { %>
+          <span class="badge badge-status-issued badge-lg">Status: Equipment Issued</span>
+        <% } else if (request.status === 'Returned') { %>
+          <span class="badge badge-status-returned badge-lg">Status: Equipment Returned</span>
+        <% } else if (request.status === 'Rejected') { %>
+          <span class="badge badge-status-rejected badge-lg">Status: Request Rejected</span>
+        <% } else if (request.status === 'Overdue') { %>
+          <span class="badge badge-status-overdue badge-lg">Status: Overdue</span>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="details-grid">
+    <!-- Main Request Details Card -->
+    <div class="card details-card">
+      <h2 class="card-title">Request Summary</h2>
+      <div class="info-list">
+        <div class="info-item">
+          <span class="info-label">Requester Name:</span>
+          <span class="info-value"><strong><%= request.requester ? request.requester.name : 'Unknown User' %></strong></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Requester Email:</span>
+          <span class="info-value"><%= request.requester ? request.requester.email : 'N/A' %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Equipment Name:</span>
+          <span class="info-value"><strong><%= request.asset ? request.asset.name : 'Unknown' %></strong></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Asset Tag:</span>
+          <span class="info-value"><code><%= request.asset ? request.asset.assetTag : 'N/A' %></code></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Requested Quantity:</span>
+          <span class="info-value font-bold"><%= request.quantity %> units</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Purpose of Use:</span>
+          <span class="info-value"><%= request.purpose %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline & Lifecycle Card -->
+    <div class="card details-card">
+      <h2 class="card-title">Timeline & Return Details</h2>
+      <div class="info-list">
+        <div class="info-item">
+          <span class="info-label">Request Date:</span>
+          <span class="info-value"><%= new Date(request.requestDate).toLocaleDateString() %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Expected Return:</span>
+          <span class="info-value"><strong><%= new Date(request.expectedReturnDate).toLocaleDateString() %></strong></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Actual Issue Date:</span>
+          <span class="info-value">
+            <%= request.issueDate ? new Date(request.issueDate).toLocaleDateString() : 'Not issued yet' %>
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Actual Return Date:</span>
+          <span class="info-value">
+            <%= request.returnDate ? new Date(request.returnDate).toLocaleDateString() : 'Not returned yet' %>
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Return Condition:</span>
+          <span class="info-value">
+            <% if (request.returnCondition) { %>
+              <span class="badge <%= request.returnCondition === 'OK' ? 'badge-condition-ok' : (request.returnCondition === 'Damaged' ? 'badge-condition-damaged' : 'badge-condition-lost') %>">
+                <%= request.returnCondition %>
+              </span>
+            <% } else { %>
+              <span class="text-muted">N/A (Pending Return)</span>
+            <% } %>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

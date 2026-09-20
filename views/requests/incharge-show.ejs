@@ -1,0 +1,155 @@
+<%- include('../partials/header') %>
+
+<% const now = new Date(); %>
+<% const isOverdue = request.status === 'Issued' && new Date(request.expectedReturnDate) < now; %>
+
+<div class="details-container">
+  <div class="details-header">
+    <a href="/lab-incharge/requests" class="back-link">&larr; Back to Requests Management</a>
+    <div class="header-action-row">
+      <div>
+        <span class="tag-badge-lg">Request #<%= request._id.toString().slice(-6).toUpperCase() %></span>
+        <h1 class="details-title"><%= request.asset ? request.asset.name : 'Equipment Request' %></h1>
+      </div>
+      <div>
+        <% if (isOverdue) { %>
+          <span class="badge badge-status-overdue badge-lg">⚠️ Status: Overdue Return</span>
+        <% } else if (request.status === 'Pending') { %>
+          <span class="badge badge-status-pending badge-lg">Status: Pending Review</span>
+        <% } else if (request.status === 'Approved') { %>
+          <span class="badge badge-status-approved badge-lg">Status: Approved (Ready for Issue)</span>
+        <% } else if (request.status === 'Issued') { %>
+          <span class="badge badge-status-issued badge-lg">Status: Equipment Issued</span>
+        <% } else if (request.status === 'Returned') { %>
+          <span class="badge badge-status-returned badge-lg">Status: Returned</span>
+        <% } else if (request.status === 'Rejected') { %>
+          <span class="badge badge-status-rejected badge-lg">Status: Rejected</span>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="details-grid">
+    <!-- Left Column: Requester & Equipment Info -->
+    <div class="card details-card">
+      <h2 class="card-title">Requester & Asset Information</h2>
+      <div class="info-list">
+        <div class="info-item">
+          <span class="info-label">Requester:</span>
+          <span class="info-value"><strong><%= request.requester ? request.requester.name : 'Unknown' %></strong></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Email:</span>
+          <span class="info-value"><%= request.requester ? request.requester.email : 'N/A' %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Equipment:</span>
+          <span class="info-value"><strong><%= request.asset ? request.asset.name : 'Unknown' %></strong></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Asset Tag:</span>
+          <span class="info-value"><code><%= request.asset ? request.asset.assetTag : 'N/A' %></code></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Category:</span>
+          <span class="info-value"><span class="category-pill"><%= request.asset ? request.asset.category : 'N/A' %></span></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Lab Location:</span>
+          <span class="info-value"><%= request.asset ? request.asset.lab : 'N/A' %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Requested Units:</span>
+          <span class="info-value font-bold"><%= request.quantity %> units</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Current Stock:</span>
+          <span class="info-value text-success font-bold"><%= request.asset ? request.asset.availableQuantity : 0 %> units available</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Purpose:</span>
+          <span class="info-value"><%= request.purpose %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Timeline & Action Control Box -->
+    <div class="card details-card">
+      <h2 class="card-title">Lifecycle & Actions</h2>
+      <div class="info-list">
+        <div class="info-item">
+          <span class="info-label">Requested On:</span>
+          <span class="info-value"><%= new Date(request.requestDate).toLocaleDateString() %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Expected Return:</span>
+          <span class="info-value <%= isOverdue ? 'text-danger font-bold' : '' %>">
+            <%= new Date(request.expectedReturnDate).toLocaleDateString() %>
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Issued On:</span>
+          <span class="info-value">
+            <%= request.issueDate ? new Date(request.issueDate).toLocaleDateString() : 'Not issued yet' %>
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Returned On:</span>
+          <span class="info-value">
+            <%= request.returnDate ? new Date(request.returnDate).toLocaleDateString() : 'Not returned yet' %>
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Return Condition:</span>
+          <span class="info-value">
+            <% if (request.returnCondition) { %>
+              <span class="badge <%= request.returnCondition === 'OK' ? 'badge-condition-ok' : (request.returnCondition === 'Damaged' ? 'badge-condition-damaged' : 'badge-condition-lost') %>">
+                <%= request.returnCondition %>
+              </span>
+            <% } else { %>
+              <span class="text-muted">N/A</span>
+            <% } %>
+          </span>
+        </div>
+      </div>
+
+      <!-- Action Panel -->
+      <div class="incharge-action-panel" style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+        <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--dark);">
+          Available Actions:
+        </h3>
+
+        <% if (request.status === 'Pending') { %>
+          <div class="action-stack">
+            <form action="/lab-incharge/requests/<%= request._id %>/approve" method="POST" onsubmit="return confirm('Approve this request?');">
+              <button type="submit" class="btn btn-primary btn-block">
+                ✅ Approve Request
+              </button>
+            </form>
+            <form action="/lab-incharge/requests/<%= request._id %>/reject" method="POST" onsubmit="return confirm('Reject this request?');" style="margin-top: 0.5rem;">
+              <button type="submit" class="btn btn-outline-danger btn-block">
+                ❌ Reject Request
+              </button>
+            </form>
+          </div>
+        <% } else if (request.status === 'Approved') { %>
+          <form action="/lab-incharge/requests/<%= request._id %>/issue" method="POST" onsubmit="return confirm('Issue <%= request.quantity %> unit(s) of equipment to requester?');">
+            <button type="submit" class="btn btn-success btn-block">
+              📤 Issue Equipment Now
+            </button>
+          </form>
+        <% } else if (request.status === 'Issued') { %>
+          <a href="/lab-incharge/requests/<%= request._id %>/return" class="btn btn-primary btn-block">
+            📥 Record Return & Condition
+          </a>
+        <% } else { %>
+          <p class="text-muted" style="font-size: 0.88rem;">
+            This request is finalized with status <strong><%= request.status %></strong>. No further actions required.
+          </p>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

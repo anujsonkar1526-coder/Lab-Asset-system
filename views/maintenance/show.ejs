@@ -1,0 +1,85 @@
+<%- include('../partials/header') %>
+
+<div class="details-container">
+  <div class="details-header">
+    <a href="/maintenance" class="back-link">&larr; Back to Maintenance Logs</a>
+    <div class="header-action-row">
+      <div>
+        <span class="tag-badge-lg">Service Log #<%= log._id.toString().slice(-6).toUpperCase() %></span>
+        <h1 class="details-title"><%= log.asset ? log.asset.name : 'Equipment Service Record' %></h1>
+      </div>
+      <div>
+        <% if (log.status === 'Completed') { %>
+          <span class="badge badge-condition-ok badge-lg">Status: Service Completed</span>
+        <% } else if (log.status === 'In Progress') { %>
+          <span class="badge badge-condition-maintenance badge-lg">Status: In Progress</span>
+        <% } else { %>
+          <span class="badge badge-status-approved badge-lg">Status: Scheduled</span>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <div class="details-grid">
+    <!-- Service Overview Card -->
+    <div class="card details-card">
+      <h2 class="card-title">Service Details</h2>
+      <div class="info-list">
+        <div class="info-item">
+          <span class="info-label">Equipment Name:</span>
+          <span class="info-value"><strong><%= log.asset ? log.asset.name : 'Unknown' %></strong></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Asset Tag:</span>
+          <span class="info-value"><code><%= log.asset ? log.asset.assetTag : 'N/A' %></code></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Lab Location:</span>
+          <span class="info-value"><%= log.asset ? log.asset.lab : 'N/A' %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Service Date:</span>
+          <span class="info-value"><strong><%= new Date(log.serviceDate).toLocaleDateString() %></strong></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Next Service Due:</span>
+          <span class="info-value text-primary font-bold"><%= new Date(log.nextServiceDue).toLocaleDateString() %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Technician / Vendor:</span>
+          <span class="info-value"><%= log.technician %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Service Description:</span>
+          <span class="info-value"><%= log.description %></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial & Next Steps Card -->
+    <div class="card details-card">
+      <h2 class="card-title">Expenditure & Next Actions</h2>
+      <div class="stock-metrics" style="grid-template-columns: 1fr;">
+        <div class="metric-box">
+          <span class="metric-number text-success">₹<%= log.cost.toLocaleString() %></span>
+          <span class="metric-label">Service Cost Incurred</span>
+        </div>
+      </div>
+
+      <div class="role-notice" style="margin-top: 1.25rem;">
+        <span class="notice-icon">ℹ️</span>
+        <span>Maintenance logs maintain institutional asset auditability and ensure safety calibration compliance.</span>
+      </div>
+
+      <div style="margin-top: 1.5rem;">
+        <% if (log.asset) { %>
+          <a href="/assets/<%= log.asset._id %>" class="btn btn-outline-primary btn-block">
+            View Equipment Inventory Profile
+          </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

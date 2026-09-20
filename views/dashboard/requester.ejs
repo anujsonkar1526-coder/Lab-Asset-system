@@ -1,0 +1,157 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h1 class="page-title">🎓 Student / Staff Requester Portal</h1>
+    <p class="page-subtitle">Track your equipment requests, monitor approval status, and manage active loans.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/requests" class="btn btn-primary">
+      <span class="btn-icon">🔬</span> Browse Available Equipment
+    </a>
+    <a href="/requests/my" class="btn btn-outline-primary">
+      📋 View All My Requests
+    </a>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- 6 PERSONAL STATISTIC CARDS                                -->
+<!-- ========================================================= -->
+<div class="metrics-grid">
+  <!-- My Total Requests -->
+  <div class="metric-card">
+    <div class="metric-card-icon">📁</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num"><%= metrics.totalRequests %></span>
+      <span class="metric-card-title">Total Requests Raised</span>
+    </div>
+  </div>
+
+  <!-- Pending Requests -->
+  <a href="/requests/my" class="metric-card metric-card-pending">
+    <div class="metric-card-icon">⏳</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num text-warning"><%= metrics.pending %></span>
+      <span class="metric-card-title">Pending Approval</span>
+    </div>
+  </a>
+
+  <!-- Approved Requests -->
+  <a href="/requests/my" class="metric-card metric-card-approved">
+    <div class="metric-card-icon">✅</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num text-success"><%= metrics.approved %></span>
+      <span class="metric-card-title">Approved (Collect Item)</span>
+    </div>
+  </a>
+
+  <!-- Currently Issued -->
+  <a href="/requests/my" class="metric-card metric-card-issued">
+    <div class="metric-card-icon">📤</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num" style="color: #7e22ce;"><%= metrics.issued %></span>
+      <span class="metric-card-title">Currently In Hand</span>
+    </div>
+  </a>
+
+  <!-- Returned Requests -->
+  <a href="/requests/my" class="metric-card metric-card-returned">
+    <div class="metric-card-icon">📥</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num"><%= metrics.returned %></span>
+      <span class="metric-card-title">Returned Items</span>
+    </div>
+  </a>
+
+  <!-- Overdue Requests -->
+  <a href="/requests/my" class="metric-card metric-card-overdue">
+    <div class="metric-card-icon">⚠️</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num text-danger"><%= metrics.overdue %></span>
+      <span class="metric-card-title">Overdue Items</span>
+    </div>
+  </a>
+</div>
+
+<!-- ========================================================= -->
+<!-- MY RECENT REQUESTS SECTION                                -->
+<!-- ========================================================= -->
+<div class="section-container" style="margin-top: 2rem;">
+  <div class="section-header-row">
+    <h2 class="section-heading">🕒 My Recent Activity</h2>
+    <a href="/requests/my" class="section-link">View all my requests &rarr;</a>
+  </div>
+
+  <div class="card table-card">
+    <% if (recentRequests && recentRequests.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Equipment</th>
+              <th>Asset Tag</th>
+              <th class="text-center">Quantity</th>
+              <th>Request Date</th>
+              <th>Expected Return</th>
+              <th>Status</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentRequests.forEach(reqItem => { %>
+              <% const isOverdue = reqItem.status === 'Issued' && new Date(reqItem.expectedReturnDate) < now; %>
+              <tr class="<%= isOverdue ? 'row-overdue' : '' %>">
+                <td>
+                  <strong><%= reqItem.asset ? reqItem.asset.name : 'Unknown Equipment' %></strong>
+                </td>
+                <td>
+                  <span class="tag-badge"><%= reqItem.asset ? reqItem.asset.assetTag : 'N/A' %></span>
+                </td>
+                <td class="text-center font-bold"><%= reqItem.quantity %></td>
+                <td><%= new Date(reqItem.requestDate).toLocaleDateString() %></td>
+                <td>
+                  <%= new Date(reqItem.expectedReturnDate).toLocaleDateString() %>
+                  <% if (isOverdue) { %>
+                    <small class="text-danger font-bold d-block">⚠️ Past Due Date</small>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (isOverdue) { %>
+                    <span class="badge badge-status-overdue">Overdue</span>
+                  <% } else if (reqItem.status === 'Pending') { %>
+                    <span class="badge badge-status-pending">Pending</span>
+                  <% } else if (reqItem.status === 'Approved') { %>
+                    <span class="badge badge-status-approved">Approved</span>
+                  <% } else if (reqItem.status === 'Issued') { %>
+                    <span class="badge badge-status-issued">Issued</span>
+                  <% } else if (reqItem.status === 'Returned') { %>
+                    <span class="badge badge-status-returned">Returned</span>
+                  <% } else if (reqItem.status === 'Rejected') { %>
+                    <span class="badge badge-status-rejected">Rejected</span>
+                  <% } %>
+                </td>
+                <td class="text-right">
+                  <a href="/requests/<%= reqItem._id %>" class="btn btn-sm btn-outline-primary">
+                    View
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">🔬</div>
+        <h3>No Activity Yet</h3>
+        <p>You haven't made any equipment requests yet. Browse the catalog to get started.</p>
+        <a href="/requests" class="btn btn-primary" style="margin-top: 1rem;">
+          Browse Available Equipment
+        </a>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

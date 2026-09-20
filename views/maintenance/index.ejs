@@ -1,0 +1,116 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h1 class="page-title">🛠️ Equipment Maintenance & Service History</h1>
+    <p class="page-subtitle">Track servicing schedules, repair costs, technician audits, and upcoming maintenance due dates.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/maintenance/new" class="btn btn-primary">
+      <span class="btn-icon">➕</span> Log Maintenance Service
+    </a>
+  </div>
+</div>
+
+<!-- Maintenance Financial & Operational Summary -->
+<div class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+  <div class="metric-card metric-card-total-assets">
+    <div class="metric-card-icon">💰</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num text-success">₹<%= totalCost.toLocaleString() %></span>
+      <span class="metric-card-title">Total Maintenance Expenditure</span>
+    </div>
+  </div>
+
+  <div class="metric-card metric-card-approved">
+    <div class="metric-card-icon">📜</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num"><%= logs ? logs.length : 0 %></span>
+      <span class="metric-card-title">Recorded Service Logs</span>
+    </div>
+  </div>
+
+  <div class="metric-card metric-card-total-units">
+    <div class="metric-card-icon">🔬</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num"><%= totalAssets %></span>
+      <span class="metric-card-title">Assets in Registry</span>
+    </div>
+  </div>
+</div>
+
+<div class="card table-card" style="margin-top: 2rem;">
+  <% if (logs && logs.length > 0) { %>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Equipment</th>
+            <th>Asset Tag</th>
+            <th>Service Date</th>
+            <th>Cost (INR)</th>
+            <th>Service Description</th>
+            <th>Next Due Date</th>
+            <th>Technician / Vendor</th>
+            <th>Status</th>
+            <th class="text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% logs.forEach(logItem => { %>
+            <% const isUpcoming = new Date(logItem.nextServiceDue) <= new Date(Date.now() + 30*24*60*60*1000); %>
+            <tr>
+              <td>
+                <strong><%= logItem.asset ? logItem.asset.name : 'Unknown Equipment' %></strong>
+              </td>
+              <td>
+                <span class="tag-badge"><%= logItem.asset ? logItem.asset.assetTag : 'N/A' %></span>
+              </td>
+              <td><%= new Date(logItem.serviceDate).toLocaleDateString() %></td>
+              <td class="font-bold text-success">₹<%= logItem.cost.toLocaleString() %></td>
+              <td>
+                <span class="truncate-text" title="<%= logItem.description %>">
+                  <%= logItem.description %>
+                </span>
+              </td>
+              <td>
+                <strong><%= new Date(logItem.nextServiceDue).toLocaleDateString() %></strong>
+                <% if (new Date(logItem.nextServiceDue) < now) { %>
+                  <small class="text-danger font-bold d-block">⚠️ Service Overdue</small>
+                <% } else if (isUpcoming) { %>
+                  <small class="text-warning font-bold d-block">⏳ Due Soon</small>
+                <% } %>
+              </td>
+              <td><%= logItem.technician %></td>
+              <td>
+                <% if (logItem.status === 'Completed') { %>
+                  <span class="badge badge-condition-ok">Completed</span>
+                <% } else if (logItem.status === 'In Progress') { %>
+                  <span class="badge badge-condition-maintenance">In Progress</span>
+                <% } else { %>
+                  <span class="badge badge-status-approved">Scheduled</span>
+                <% } %>
+              </td>
+              <td class="text-right">
+                <a href="/maintenance/<%= logItem._id %>" class="btn btn-sm btn-outline-primary">
+                  View
+                </a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon">🛠️</div>
+      <h3>No Maintenance Records Yet</h3>
+      <p>There are no recorded service logs. Maintain calibration and repair histories by logging equipment maintenance.</p>
+      <a href="/maintenance/new" class="btn btn-primary" style="margin-top: 1rem;">
+        Log First Service Record
+      </a>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>

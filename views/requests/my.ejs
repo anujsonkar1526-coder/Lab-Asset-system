@@ -1,0 +1,117 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h1 class="page-title">📋 My Equipment Requests</h1>
+    <p class="page-subtitle">Track the status of your equipment issue and return requests in real-time.</p>
+  </div>
+  <div class="page-header-actions">
+    <button type="button" class="btn btn-secondary" onclick="exportTableToCSV('my-requests-table', 'my-lab-requests.csv')">
+      📥 Export History
+    </button>
+    <a href="/requests" class="btn btn-primary">
+      <span>🔬 Browse Available Equipment</span>
+    </a>
+  </div>
+</div>
+
+<div class="card table-card">
+  <% if (requests && requests.length > 0) { %>
+    <!-- Live Search Toolbar -->
+    <div class="table-toolbar">
+      <div class="table-title-group">
+        <span class="table-title">My Loan Submissions</span>
+        <span class="table-count-badge"><%= requests.length %> requests</span>
+      </div>
+      <div class="table-actions-group">
+        <div class="table-search-box">
+          <span class="search-icon-placeholder">🔍</span>
+          <input
+            type="text"
+            class="table-search-input"
+            data-table-target="my-requests-table"
+            placeholder="Search by equipment, purpose..."
+          >
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table" id="my-requests-table">
+        <thead>
+          <tr>
+            <th>Equipment</th>
+            <th>Tag</th>
+            <th class="text-center">Qty</th>
+            <th>Purpose</th>
+            <th>Request Date</th>
+            <th>Expected Return</th>
+            <th>Status</th>
+            <th class="text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% requests.forEach(reqItem => { %>
+            <tr>
+              <td>
+                <strong><%= reqItem.asset ? reqItem.asset.name : 'Unknown Equipment' %></strong>
+              </td>
+              <td>
+                <span class="tag-badge"><%= reqItem.asset ? reqItem.asset.assetTag : 'N/A' %></span>
+              </td>
+              <td class="text-center font-bold"><%= reqItem.quantity %></td>
+              <td>
+                <span class="truncate-text" title="<%= reqItem.purpose %>">
+                  <%= reqItem.purpose %>
+                </span>
+              </td>
+              <td><%= new Date(reqItem.requestDate).toLocaleDateString() %></td>
+              <td>
+                <%= new Date(reqItem.expectedReturnDate).toLocaleDateString() %>
+                <% const isOverdue = reqItem.status === 'Issued' && new Date(reqItem.expectedReturnDate) < new Date(); %>
+                <% if (isOverdue) { %>
+                  <small class="text-danger font-bold d-block">⚠️ Past Due</small>
+                <% } %>
+              </td>
+              <td>
+                <% const isItemOverdue = reqItem.status === 'Issued' && new Date(reqItem.expectedReturnDate) < new Date(); %>
+                <% if (isItemOverdue) { %>
+                  <span class="badge badge-status-overdue"><span class="badge-dot"></span> Overdue</span>
+                <% } else if (reqItem.status === 'Pending') { %>
+                  <span class="badge badge-status-pending"><span class="badge-dot"></span> Pending</span>
+                <% } else if (reqItem.status === 'Approved') { %>
+                  <span class="badge badge-status-approved"><span class="badge-dot"></span> Approved</span>
+                <% } else if (reqItem.status === 'Issued') { %>
+                  <span class="badge badge-status-issued"><span class="badge-dot"></span> Issued</span>
+                <% } else if (reqItem.status === 'Returned') { %>
+                  <span class="badge badge-status-returned"><span class="badge-dot"></span> Returned</span>
+                  <% if (reqItem.returnCondition) { %>
+                    <small class="d-block text-muted">(<%= reqItem.returnCondition %>)</small>
+                  <% } %>
+                <% } else if (reqItem.status === 'Rejected') { %>
+                  <span class="badge badge-status-rejected"><span class="badge-dot"></span> Rejected</span>
+                <% } %>
+              </td>
+              <td class="text-right">
+                <a href="/requests/<%= reqItem._id %>" class="btn btn-sm btn-outline-primary">
+                  Details
+                </a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>No Requests Found</h3>
+      <p>You have not submitted any equipment issue requests yet.</p>
+      <a href="/requests" class="btn btn-primary" style="margin-top: 1rem;">
+        Browse Available Equipment
+      </a>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>

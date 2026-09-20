@@ -1,0 +1,71 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h1 class="page-title">🔬 Available Laboratory Equipment</h1>
+    <p class="page-subtitle">Browse institutional equipment currently in stock and raise official issue requests.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/requests/my" class="btn btn-outline-primary">
+      <span>📋 My Requests History</span>
+    </a>
+  </div>
+</div>
+
+<% if (assets && assets.length > 0) { %>
+  <!-- Equipment Cards Grid -->
+  <div class="equipment-grid">
+    <% assets.forEach(asset => { %>
+      <div class="card equipment-card">
+        <div class="equipment-header">
+          <span class="category-pill"><%= asset.category %></span>
+          <span class="tag-badge"><%= asset.assetTag %></span>
+        </div>
+
+        <h2 class="equipment-name"><%= asset.name %></h2>
+
+        <div class="equipment-meta">
+          <div class="meta-row">
+            <span class="meta-label">📍 Laboratory:</span>
+            <span class="meta-val"><%= asset.lab %></span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">🏷️ Condition:</span>
+            <span class="meta-val">
+              <% if (asset.condition === 'OK') { %>
+                <span class="badge badge-condition-ok"><span class="badge-dot"></span> OK</span>
+              <% } else if (asset.condition === 'Maintenance') { %>
+                <span class="badge badge-condition-maintenance"><span class="badge-dot"></span> Maintenance</span>
+              <% } else if (asset.condition === 'Damaged') { %>
+                <span class="badge badge-condition-damaged"><span class="badge-dot"></span> Damaged</span>
+              <% } else { %>
+                <span class="badge badge-condition-lost"><span class="badge-dot"></span> Lost</span>
+              <% } %>
+            </span>
+          </div>
+          <div class="meta-row highlight-stock">
+            <span class="meta-label">📦 Available Units:</span>
+            <span class="meta-val stock-val"><%= asset.availableQuantity %> of <%= asset.totalQuantity %></span>
+          </div>
+        </div>
+
+        <div class="equipment-card-footer">
+          <a href="/requests/new/<%= asset._id %>" class="btn btn-primary btn-block">
+            <span>Request Equipment</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+<% } else { %>
+  <div class="card table-card">
+    <div class="empty-state">
+      <div class="empty-icon">⏳</div>
+      <h3>No Equipment Available</h3>
+      <p>There is currently no laboratory equipment available for issue. Please check back later or consult your Lab In-Charge.</p>
+    </div>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

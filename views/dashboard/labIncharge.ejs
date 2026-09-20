@@ -1,0 +1,258 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h1 class="page-title">📊 Lab In-charge Dashboard</h1>
+    <p class="page-subtitle">Manage lab operations, issue approvals, active equipment tracking, and overdue returns.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/lab-incharge/requests" class="btn btn-primary">
+      📋 View All Requests
+    </a>
+  </div>
+</div>
+
+<!-- Summary Metric Cards -->
+<div class="metrics-grid">
+  <!-- Pending Requests -->
+  <a href="/lab-incharge/requests?status=Pending" class="metric-card metric-card-pending">
+    <div class="metric-card-icon">⏳</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num text-warning"><%= metrics.pending %></span>
+      <span class="metric-card-title">Pending Requests</span>
+    </div>
+  </a>
+
+  <!-- Approved Requests -->
+  <a href="/lab-incharge/requests?status=Approved" class="metric-card metric-card-approved">
+    <div class="metric-card-icon">✅</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num text-success"><%= metrics.approved %></span>
+      <span class="metric-card-title">Approved (Ready to Issue)</span>
+    </div>
+  </a>
+
+  <!-- Issued Equipment -->
+  <a href="/lab-incharge/requests?status=Issued" class="metric-card metric-card-issued">
+    <div class="metric-card-icon">📤</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num" style="color: #7e22ce;"><%= metrics.issued %></span>
+      <span class="metric-card-title">Currently Issued</span>
+    </div>
+  </a>
+
+  <!-- Overdue Returns -->
+  <a href="#overdue-section" class="metric-card metric-card-overdue">
+    <div class="metric-card-icon">⚠️</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num text-danger"><%= metrics.overdue %></span>
+      <span class="metric-card-title">Overdue Returns</span>
+    </div>
+  </a>
+
+  <!-- Returned Equipment -->
+  <a href="/lab-incharge/requests?status=Returned" class="metric-card metric-card-returned">
+    <div class="metric-card-icon">📥</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num"><%= metrics.returned %></span>
+      <span class="metric-card-title">Returned Equipment</span>
+    </div>
+  </a>
+</div>
+
+<!-- ========================================================= -->
+<!-- SECTION 1: RECENT PENDING REQUESTS (FOR ACTION)           -->
+<!-- ========================================================= -->
+<div class="section-container" style="margin-top: 2rem;">
+  <div class="section-header-row">
+    <h2 class="section-heading">⚡ Recent Pending Requests (Requires Review)</h2>
+    <a href="/lab-incharge/requests?status=Pending" class="section-link">View all pending &rarr;</a>
+  </div>
+
+  <div class="card table-card">
+    <% if (pendingRequests && pendingRequests.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Requester</th>
+              <th>Equipment</th>
+              <th class="text-center">Quantity</th>
+              <th>Purpose</th>
+              <th>Expected Return</th>
+              <th>Status</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% pendingRequests.forEach(reqItem => { %>
+              <tr>
+                <td>
+                  <strong><%= reqItem.requester ? reqItem.requester.name : 'Unknown' %></strong>
+                  <small class="text-muted d-block"><%= reqItem.requester ? reqItem.requester.email : '' %></small>
+                </td>
+                <td>
+                  <strong><%= reqItem.asset ? reqItem.asset.name : 'Unknown Equipment' %></strong>
+                  <small class="text-muted d-block">Tag: <%= reqItem.asset ? reqItem.asset.assetTag : 'N/A' %></small>
+                </td>
+                <td class="text-center font-bold"><%= reqItem.quantity %></td>
+                <td>
+                  <span class="truncate-text" title="<%= reqItem.purpose %>">
+                    <%= reqItem.purpose %>
+                  </span>
+                </td>
+                <td><%= new Date(reqItem.expectedReturnDate).toLocaleDateString() %></td>
+                <td>
+                  <span class="badge badge-status-pending">Pending</span>
+                </td>
+                <td class="text-right">
+                  <div class="action-btn-group">
+                    <a href="/lab-incharge/requests/<%= reqItem._id %>" class="btn btn-sm btn-outline-primary">
+                      Review
+                    </a>
+                    <form action="/lab-incharge/requests/<%= reqItem._id %>/approve" method="POST" class="inline-form" onsubmit="return confirm('Approve request for <%= reqItem.quantity %>x \'<%= reqItem.asset ? reqItem.asset.name : '' %>\'?');">
+                      <button type="submit" class="btn btn-sm btn-primary">
+                        Approve
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">🎉</div>
+        <h3>No Pending Requests</h3>
+        <p>All laboratory equipment requests have been reviewed and processed.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- SECTION 2: OVERDUE EQUIPMENT SECTION                      -->
+<!-- ========================================================= -->
+<div class="section-container" id="overdue-section" style="margin-top: 2rem;">
+  <div class="section-header-row">
+    <div>
+      <h2 class="section-heading text-danger">⚠️ Active Overdue Returns</h2>
+      <p class="section-subheading">Items that need urgent return follow-up with requesters.</p>
+    </div>
+    <span class="badge badge-status-overdue badge-lg"><%= metrics.overdue %> Overdue</span>
+  </div>
+
+  <div class="card table-card">
+    <% if (overdueRequests && overdueRequests.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Requester</th>
+              <th>Equipment</th>
+              <th>Tag</th>
+              <th class="text-center">Qty</th>
+              <th>Expected Return</th>
+              <th class="text-center">Days Overdue</th>
+              <th>Status</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% overdueRequests.forEach(reqItem => { %>
+              <% const daysOverdue = Math.max(1, Math.ceil((now - new Date(reqItem.expectedReturnDate)) / (1000 * 60 * 60 * 24))); %>
+              <tr class="row-overdue">
+                <td>
+                  <strong><%= reqItem.requester ? reqItem.requester.name : 'Unknown' %></strong>
+                  <small class="text-muted d-block"><%= reqItem.requester ? reqItem.requester.email : '' %></small>
+                </td>
+                <td>
+                  <strong><%= reqItem.asset ? reqItem.asset.name : 'Unknown' %></strong>
+                </td>
+                <td>
+                  <span class="tag-badge"><%= reqItem.asset ? reqItem.asset.assetTag : 'N/A' %></span>
+                </td>
+                <td class="text-center font-bold"><%= reqItem.quantity %></td>
+                <td><%= new Date(reqItem.expectedReturnDate).toLocaleDateString() %></td>
+                <td class="text-center">
+                  <span class="days-overdue-pill"><%= daysOverdue %> day<%= daysOverdue > 1 ? 's' : '' %></span>
+                </td>
+                <td>
+                  <span class="badge badge-status-overdue">Overdue</span>
+                </td>
+                <td class="text-right">
+                  <a href="/lab-incharge/requests/<%= reqItem._id %>/return" class="btn btn-sm btn-outline-danger">
+                    Record Return
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">✅</div>
+        <h3>No Overdue Equipment</h3>
+        <p>All issued equipment is on schedule.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- SECTION 3: RECENTLY ISSUED EQUIPMENT                      -->
+<!-- ========================================================= -->
+<div class="section-container" style="margin-top: 2rem;">
+  <div class="section-header-row">
+    <h2 class="section-heading">📤 Recently Issued Equipment (In Hand)</h2>
+    <a href="/lab-incharge/requests?status=Issued" class="section-link">View all issued &rarr;</a>
+  </div>
+
+  <div class="card table-card">
+    <% if (recentIssued && recentIssued.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Requester</th>
+              <th>Equipment</th>
+              <th class="text-center">Qty</th>
+              <th>Issued On</th>
+              <th>Expected Return</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% recentIssued.forEach(reqItem => { %>
+              <tr>
+                <td>
+                  <strong><%= reqItem.requester ? reqItem.requester.name : 'Unknown' %></strong>
+                </td>
+                <td>
+                  <strong><%= reqItem.asset ? reqItem.asset.name : 'Unknown Equipment' %></strong>
+                </td>
+                <td class="text-center font-bold"><%= reqItem.quantity %></td>
+                <td><%= reqItem.issueDate ? new Date(reqItem.issueDate).toLocaleDateString() : 'N/A' %></td>
+                <td><%= new Date(reqItem.expectedReturnDate).toLocaleDateString() %></td>
+                <td class="text-right">
+                  <a href="/lab-incharge/requests/<%= reqItem._id %>/return" class="btn btn-sm btn-outline-secondary">
+                    Process Return
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <p>No equipment currently issued.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

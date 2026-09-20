@@ -1,0 +1,95 @@
+<%- include('../partials/header') %>
+
+<div class="form-container-card">
+  <div class="form-header">
+    <a href="/requests" class="back-link">&larr; Back to Available Equipment</a>
+    <h1 class="form-title">📝 Raise Equipment Issue Request</h1>
+    <p class="form-subtitle">Submit your request details to the Lab In-charge for approval.</p>
+  </div>
+
+  <!-- Selected Equipment Information Summary -->
+  <div class="selected-asset-box">
+    <div class="selected-asset-header">
+      <div>
+        <span class="tag-badge"><%= asset.assetTag %></span>
+        <h2 class="selected-asset-title"><%= asset.name %></h2>
+      </div>
+      <span class="category-pill"><%= asset.category %></span>
+    </div>
+    <div class="selected-asset-meta">
+      <span><strong>Lab Location:</strong> <%= asset.lab %></span>
+      <span><strong>Available Stock:</strong> <span class="text-success font-bold"><%= asset.availableQuantity %> units</span></span>
+      <span><strong>Condition:</strong> <%= asset.condition %></span>
+    </div>
+  </div>
+
+  <!-- Issue Request Form -->
+  <form action="/requests" method="POST" class="asset-form">
+    <!-- Hidden Asset ID to prevent manual tampering -->
+    <input type="hidden" name="assetId" value="<%= asset._id %>">
+
+    <div class="form-group">
+      <label for="quantity" class="form-label">
+        Requested Quantity <span class="required">*</span>
+      </label>
+      <input
+        type="number"
+        id="quantity"
+        name="quantity"
+        class="form-control"
+        min="1"
+        max="<%= asset.availableQuantity %>"
+        placeholder="Enter units (1 to <%= asset.availableQuantity %>)"
+        value="<%= typeof formData !== 'undefined' && formData.quantity ? formData.quantity : 1 %>"
+        required
+      >
+      <small class="form-text">
+        Maximum available units for this equipment is <strong><%= asset.availableQuantity %></strong>.
+      </small>
+    </div>
+
+    <div class="form-group">
+      <label for="expectedReturnDate" class="form-label">
+        Expected Return Date <span class="required">*</span>
+      </label>
+      <% const today = new Date().toISOString().split('T')[0]; %>
+      <input
+        type="date"
+        id="expectedReturnDate"
+        name="expectedReturnDate"
+        class="form-control"
+        min="<%= today %>"
+        value="<%= typeof formData !== 'undefined' && formData.expectedReturnDate ? formData.expectedReturnDate : '' %>"
+        required
+      >
+      <small class="form-text">Please specify the date when you intend to return the equipment.</small>
+    </div>
+
+    <div class="form-group">
+      <label for="purpose" class="form-label">
+        Purpose of Request <span class="required">*</span>
+      </label>
+      <textarea
+        id="purpose"
+        name="purpose"
+        rows="3"
+        class="form-control"
+        placeholder="e.g. Final year robotics project simulation, ECE lab experiment 4, etc."
+        required
+      ><%= typeof formData !== 'undefined' && formData.purpose ? formData.purpose : '' %></textarea>
+      <small class="form-text">Briefly explain how and where the equipment will be utilized.</small>
+    </div>
+
+    <div class="role-notice" style="margin-top: 0.5rem;">
+      <span class="notice-icon">ℹ️</span>
+      <span>Your request will be submitted with <strong>Pending</strong> status for review by the Lab In-charge. Equipment will only be issued upon approval.</span>
+    </div>
+
+    <div class="form-actions">
+      <a href="/requests" class="btn btn-outline-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary">Submit Request</button>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

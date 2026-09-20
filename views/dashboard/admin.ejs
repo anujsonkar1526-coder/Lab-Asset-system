@@ -1,0 +1,354 @@
+<%- include('../partials/header') %>
+
+<div class="page-header">
+  <div class="page-header-text">
+    <h1 class="page-title">🛡️ Admin Management & Analytics Dashboard</h1>
+    <p class="page-subtitle">Centralized inventory control, real-time asset tracking, overdue alerts, and damaged/lost audits.</p>
+  </div>
+  <div class="page-header-actions">
+    <a href="/assets/new" class="btn btn-primary">
+      <span class="btn-icon">➕</span> Add New Asset
+    </a>
+    <a href="/assets" class="btn btn-outline-primary">
+      📦 Manage All Assets
+    </a>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- 8 STATISTIC CARDS (INVENTORY & OPERATIONS)                -->
+<!-- ========================================================= -->
+<div class="stats-group-title">📦 Asset & Inventory Metrics</div>
+<div class="metrics-grid">
+  <!-- Total Assets (Distinct Asset Documents) -->
+  <div class="metric-card metric-card-total-assets">
+    <div class="metric-card-icon">🏷️</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num"><%= metrics.totalAssets %></span>
+      <span class="metric-card-title">Total Unique Assets</span>
+    </div>
+  </div>
+
+  <!-- Total Units (Sum of all totalQuantity) -->
+  <div class="metric-card metric-card-total-units">
+    <div class="metric-card-icon">📦</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num"><%= metrics.totalUnits %></span>
+      <span class="metric-card-title">Total Equipment Units</span>
+    </div>
+  </div>
+
+  <!-- Available Units (Sum of all availableQuantity) -->
+  <div class="metric-card metric-card-available">
+    <div class="metric-card-icon">🟢</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num text-success"><%= metrics.availableUnits %></span>
+      <span class="metric-card-title">Available Units</span>
+    </div>
+  </div>
+
+  <!-- Issued Units (Total Units - Available Units) -->
+  <div class="metric-card metric-card-issued">
+    <div class="metric-card-icon">📤</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num" style="color: #7e22ce;"><%= metrics.issuedUnits %></span>
+      <span class="metric-card-title">Currently Issued Units</span>
+    </div>
+  </div>
+</div>
+
+<div class="stats-group-title" style="margin-top: 1.5rem;">⚡ Operations & Audit Status</div>
+<div class="metrics-grid">
+  <!-- Pending Requests -->
+  <a href="/lab-incharge/requests?status=Pending" class="metric-card metric-card-pending">
+    <div class="metric-card-icon">⏳</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num text-warning"><%= metrics.pendingRequests %></span>
+      <span class="metric-card-title">Pending Requests</span>
+    </div>
+  </a>
+
+  <!-- Overdue Returns -->
+  <a href="#overdue-section" class="metric-card metric-card-overdue">
+    <div class="metric-card-icon">⚠️</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num text-danger"><%= metrics.overdueReturns %></span>
+      <span class="metric-card-title">Overdue Returns</span>
+    </div>
+  </a>
+
+  <!-- Damaged Items -->
+  <a href="#damaged-lost-section" class="metric-card metric-card-damaged">
+    <div class="metric-card-icon">🛠️</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num" style="color: #b91c1c;"><%= metrics.damagedItems %></span>
+      <span class="metric-card-title">Damaged Items</span>
+    </div>
+  </a>
+
+  <!-- Lost Items -->
+  <a href="#damaged-lost-section" class="metric-card metric-card-lost">
+    <div class="metric-card-icon">❓</div>
+    <div class="metric-card-content">
+      <span class="metric-card-num" style="color: #475569;"><%= metrics.lostItems %></span>
+      <span class="metric-card-title">Lost Items</span>
+    </div>
+  </a>
+</div>
+
+<!-- ========================================================= -->
+<!-- SECTION 1: OVERDUE RETURNS TABLE                          -->
+<!-- ========================================================= -->
+<div class="section-container" id="overdue-section" style="margin-top: 2.5rem;">
+  <div class="section-header-row">
+    <div>
+      <h2 class="section-heading text-danger">⚠️ Active Overdue Returns</h2>
+      <p class="section-subheading">Equipment currently issued to requesters that has passed its expected return date.</p>
+    </div>
+    <span class="badge badge-status-overdue badge-lg"><%= metrics.overdueReturns %> Overdue</span>
+  </div>
+
+  <div class="card table-card">
+    <% if (overdueRequests && overdueRequests.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Requester</th>
+              <th>Equipment</th>
+              <th>Tag</th>
+              <th class="text-center">Qty</th>
+              <th>Expected Return</th>
+              <th class="text-center">Days Overdue</th>
+              <th>Status</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% overdueRequests.forEach(reqItem => { %>
+              <% const daysOverdue = Math.max(1, Math.ceil((now - new Date(reqItem.expectedReturnDate)) / (1000 * 60 * 60 * 24))); %>
+              <tr class="row-overdue">
+                <td>
+                  <strong><%= reqItem.requester ? reqItem.requester.name : 'Unknown' %></strong>
+                  <small class="text-muted d-block"><%= reqItem.requester ? reqItem.requester.email : '' %></small>
+                </td>
+                <td>
+                  <strong><%= reqItem.asset ? reqItem.asset.name : 'Unknown Equipment' %></strong>
+                </td>
+                <td>
+                  <span class="tag-badge"><%= reqItem.asset ? reqItem.asset.assetTag : 'N/A' %></span>
+                </td>
+                <td class="text-center font-bold"><%= reqItem.quantity %></td>
+                <td>
+                  <strong><%= new Date(reqItem.expectedReturnDate).toLocaleDateString() %></strong>
+                </td>
+                <td class="text-center">
+                  <span class="days-overdue-pill"><%= daysOverdue %> day<%= daysOverdue > 1 ? 's' : '' %></span>
+                </td>
+                <td>
+                  <span class="badge badge-status-overdue">Overdue</span>
+                </td>
+                <td class="text-right">
+                  <a href="/lab-incharge/requests/<%= reqItem._id %>/return" class="btn btn-sm btn-outline-danger">
+                    Record Return
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">✅</div>
+        <h3>No Overdue Equipment</h3>
+        <p>All issued equipment is currently on schedule or returned.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- SECTION 2: DAMAGED & LOST AUDIT TABLE                     -->
+<!-- ========================================================= -->
+<div class="section-container" id="damaged-lost-section" style="margin-top: 2.5rem;">
+  <div class="section-header-row">
+    <div>
+      <h2 class="section-heading">🛠️ Damaged & Lost Equipment Audit Log</h2>
+      <p class="section-subheading">Records of equipment returned in damaged or lost condition requiring replacement or service.</p>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <% if (damagedLostRequests && damagedLostRequests.length > 0) { %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Equipment</th>
+              <th>Asset Tag</th>
+              <th>Requester</th>
+              <th class="text-center">Quantity</th>
+              <th>Return Date</th>
+              <th>Condition</th>
+              <th>Purpose / Notes</th>
+              <th class="text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% damagedLostRequests.forEach(reqItem => { %>
+              <tr>
+                <td>
+                  <strong><%= reqItem.asset ? reqItem.asset.name : 'Unknown Equipment' %></strong>
+                </td>
+                <td>
+                  <span class="tag-badge"><%= reqItem.asset ? reqItem.asset.assetTag : 'N/A' %></span>
+                </td>
+                <td>
+                  <strong><%= reqItem.requester ? reqItem.requester.name : 'Unknown' %></strong>
+                  <small class="text-muted d-block"><%= reqItem.requester ? reqItem.requester.email : '' %></small>
+                </td>
+                <td class="text-center font-bold"><%= reqItem.quantity %></td>
+                <td>
+                  <%= reqItem.returnDate ? new Date(reqItem.returnDate).toLocaleDateString() : 'N/A' %>
+                </td>
+                <td>
+                  <% if (reqItem.returnCondition === 'Damaged') { %>
+                    <span class="badge badge-condition-damaged">Damaged</span>
+                  <% } else if (reqItem.returnCondition === 'Lost') { %>
+                    <span class="badge badge-condition-lost">Lost</span>
+                  <% } %>
+                </td>
+                <td>
+                  <span class="truncate-text" title="<%= reqItem.purpose %>">
+                    <%= reqItem.purpose %>
+                  </span>
+                </td>
+                <td class="text-right">
+                  <a href="/lab-incharge/requests/<%= reqItem._id %>" class="btn btn-sm btn-outline-primary">
+                    View
+                  </a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="empty-icon">🛡️</div>
+        <h3>No Damaged or Lost Equipment</h3>
+        <p>There are no recorded damage or loss incidents in the system.</p>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- SECTION 3: RECENT REQUESTS & RECENTLY ISSUED (2-COL GRID)  -->
+<!-- ========================================================= -->
+<div class="dashboard-grid-2col" style="margin-top: 2.5rem;">
+  <!-- Recent Requests -->
+  <div class="section-container">
+    <div class="section-header-row">
+      <h2 class="section-heading">📝 Recent Issue Requests</h2>
+      <a href="/lab-incharge/requests" class="section-link">View all &rarr;</a>
+    </div>
+
+    <div class="card table-card">
+      <% if (recentRequests && recentRequests.length > 0) { %>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Requester</th>
+                <th>Equipment</th>
+                <th class="text-center">Qty</th>
+                <th>Request Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% recentRequests.forEach(reqItem => { %>
+                <tr>
+                  <td>
+                    <strong><%= reqItem.requester ? reqItem.requester.name : 'Unknown' %></strong>
+                  </td>
+                  <td>
+                    <strong><%= reqItem.asset ? reqItem.asset.name : 'Unknown' %></strong>
+                  </td>
+                  <td class="text-center font-bold"><%= reqItem.quantity %></td>
+                  <td><%= new Date(reqItem.requestDate).toLocaleDateString() %></td>
+                  <td>
+                    <% if (reqItem.status === 'Pending') { %>
+                      <span class="badge badge-status-pending">Pending</span>
+                    <% } else if (reqItem.status === 'Approved') { %>
+                      <span class="badge badge-status-approved">Approved</span>
+                    <% } else if (reqItem.status === 'Issued') { %>
+                      <span class="badge badge-status-issued">Issued</span>
+                    <% } else if (reqItem.status === 'Returned') { %>
+                      <span class="badge badge-status-returned">Returned</span>
+                    <% } else if (reqItem.status === 'Rejected') { %>
+                      <span class="badge badge-status-rejected">Rejected</span>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <p>No requests recorded yet.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Recently Issued Equipment -->
+  <div class="section-container">
+    <div class="section-header-row">
+      <h2 class="section-heading">📤 Recently Issued Equipment</h2>
+      <a href="/lab-incharge/requests?status=Issued" class="section-link">View all issued &rarr;</a>
+    </div>
+
+    <div class="card table-card">
+      <% if (recentIssued && recentIssued.length > 0) { %>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Requester</th>
+                <th>Equipment</th>
+                <th class="text-center">Qty</th>
+                <th>Issued Date</th>
+                <th>Expected Return</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% recentIssued.forEach(reqItem => { %>
+                <tr>
+                  <td>
+                    <strong><%= reqItem.requester ? reqItem.requester.name : 'Unknown' %></strong>
+                  </td>
+                  <td>
+                    <strong><%= reqItem.asset ? reqItem.asset.name : 'Unknown' %></strong>
+                  </td>
+                  <td class="text-center font-bold"><%= reqItem.quantity %></td>
+                  <td><%= reqItem.issueDate ? new Date(reqItem.issueDate).toLocaleDateString() : 'N/A' %></td>
+                  <td><%= new Date(reqItem.expectedReturnDate).toLocaleDateString() %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="empty-state">
+          <p>No equipment currently issued.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

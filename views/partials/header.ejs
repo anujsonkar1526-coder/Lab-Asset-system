@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'Lab Equipment & Asset Tracking System' %></title>
+  
+  <!-- Premium Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Global Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand-logo">
+        <div class="brand-icon-wrapper">
+          <span class="logo-icon">🔬</span>
+        </div>
+        <div class="brand-text-group">
+          <span class="brand-title">LabTrack<span class="brand-accent">OS</span></span>
+          <span class="brand-subtitle">Asset &amp; Equipment Portal</span>
+        </div>
+      </a>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="/" class="nav-link">Home</a>
+        
+        <% if (user && user.role === 'admin') { %>
+          <a href="/dashboard/admin" class="nav-link">Dashboard</a>
+          <a href="/assets" class="nav-link">Asset Inventory</a>
+          <a href="/lab-incharge/requests" class="nav-link">All Requests</a>
+          <a href="/maintenance" class="nav-link">Maintenance</a>
+        <% } %>
+
+        <% if (user && user.role === 'lab_incharge') { %>
+          <a href="/dashboard/lab-incharge" class="nav-link">Dashboard</a>
+          <a href="/lab-incharge/requests" class="nav-link">Review Requests</a>
+          <a href="/maintenance" class="nav-link">Maintenance</a>
+        <% } %>
+
+        <% if (user && user.role === 'requester') { %>
+          <a href="/dashboard/requester" class="nav-link">Dashboard</a>
+          <a href="/requests" class="nav-link">Available Equipment</a>
+          <a href="/requests/my" class="nav-link">My Requests</a>
+        <% } %>
+
+        <% if (user) { %>
+          <!-- User Profile & Action Menu -->
+          <div class="user-menu">
+            <div class="user-pill">
+              <div class="user-avatar-badge">
+                <%= user.name.charAt(0).toUpperCase() %>
+              </div>
+              <div class="user-info-text">
+                <span class="user-name"><%= user.name %></span>
+                <span class="badge badge-<%= user.role %>">
+                  <span class="badge-dot"></span>
+                  <%= user.role.replace('_', ' ').toUpperCase() %>
+                </span>
+              </div>
+            </div>
+            <a href="/auth/logout" class="btn btn-outline-danger btn-sm btn-logout" title="Sign Out">
+              <span>Sign Out</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </a>
+          </div>
+        <% } else { %>
+          <!-- Authentication Links -->
+          <div class="auth-btn-group">
+            <a href="/auth/login" class="btn btn-outline-primary btn-sm">Sign In</a>
+            <a href="/auth/register" class="btn btn-primary btn-sm">Register</a>
+          </div>
+        <% } %>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Flash/Status alerts -->
+  <main class="main-content">
+    <div class="container">
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger" role="alert">
+          <div class="alert-icon-box">⚠️</div>
+          <div class="alert-content">
+            <strong>Action Required</strong>
+            <p><%= error %></p>
+          </div>
+          <button type="button" class="alert-close" onclick="this.parentElement.remove()" aria-label="Close alert">&times;</button>
+        </div>
+      <% } %>
+
+      <% if (typeof success !== 'undefined' && success) { %>
+        <div class="alert alert-success" role="alert">
+          <div class="alert-icon-box">✅</div>
+          <div class="alert-content">
+            <strong>Success</strong>
+            <p><%= success %></p>
+          </div>
+          <button type="button" class="alert-close" onclick="this.parentElement.remove()" aria-label="Close alert">&times;</button>
+        </div>
+      <% } %>

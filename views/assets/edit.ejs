@@ -1,0 +1,115 @@
+<%- include('../partials/header') %>
+
+<div class="form-container-card">
+  <div class="form-header">
+    <a href="/assets" class="back-link">&larr; Back to Assets</a>
+    <h1 class="form-title">✏️ Edit Lab Asset</h1>
+    <p class="form-subtitle">Update equipment specifications, condition, or inventory quantity.</p>
+  </div>
+
+  <form action="/assets/<%= asset._id %>/update" method="POST" class="asset-form">
+    <div class="form-grid">
+      <!-- Asset Tag -->
+      <div class="form-group">
+        <label for="assetTag" class="form-label">Asset Tag / Serial ID <span class="required">*</span></label>
+        <input
+          type="text"
+          id="assetTag"
+          name="assetTag"
+          class="form-control"
+          value="<%= typeof formData !== 'undefined' && formData.assetTag ? formData.assetTag : asset.assetTag %>"
+          required
+        >
+        <small class="form-text">Must remain unique.</small>
+      </div>
+
+      <!-- Equipment Name -->
+      <div class="form-group">
+        <label for="name" class="form-label">Equipment Name <span class="required">*</span></label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          class="form-control"
+          value="<%= typeof formData !== 'undefined' && formData.name ? formData.name : asset.name %>"
+          required
+        >
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label for="category" class="form-label">Category <span class="required">*</span></label>
+        <input
+          type="text"
+          id="category"
+          name="category"
+          class="form-control"
+          value="<%= typeof formData !== 'undefined' && formData.category ? formData.category : asset.category %>"
+          required
+        >
+      </div>
+
+      <!-- Lab Location -->
+      <div class="form-group">
+        <label for="lab" class="form-label">Lab Location / Department <span class="required">*</span></label>
+        <input
+          type="text"
+          id="lab"
+          name="lab"
+          class="form-control"
+          value="<%= typeof formData !== 'undefined' && formData.lab ? formData.lab : asset.lab %>"
+          required
+        >
+      </div>
+
+      <!-- Equipment Condition -->
+      <div class="form-group">
+        <label for="condition" class="form-label">Condition <span class="required">*</span></label>
+        <% const currentCondition = (typeof formData !== 'undefined' && formData.condition) ? formData.condition : asset.condition; %>
+        <select id="condition" name="condition" class="form-control" required>
+          <option value="OK" <%= currentCondition === 'OK' ? 'selected' : '' %>>OK (Operational)</option>
+          <option value="Maintenance" <%= currentCondition === 'Maintenance' ? 'selected' : '' %>>Maintenance (Under Service)</option>
+          <option value="Damaged" <%= currentCondition === 'Damaged' ? 'selected' : '' %>>Damaged (Needs Repair)</option>
+          <option value="Lost" <%= currentCondition === 'Lost' ? 'selected' : '' %>>Lost (Unaccounted)</option>
+        </select>
+      </div>
+
+      <!-- Total Quantity -->
+      <div class="form-group">
+        <label for="totalQuantity" class="form-label">Total Quantity <span class="required">*</span></label>
+        <input
+          type="number"
+          id="totalQuantity"
+          name="totalQuantity"
+          class="form-control"
+          min="0"
+          value="<%= typeof formData !== 'undefined' && formData.totalQuantity !== undefined ? formData.totalQuantity : asset.totalQuantity %>"
+          required
+        >
+        <small class="form-text">Cannot be negative.</small>
+      </div>
+
+      <!-- Available Quantity -->
+      <div class="form-group">
+        <label for="availableQuantity" class="form-label">Available Quantity <span class="required">*</span></label>
+        <input
+          type="number"
+          id="availableQuantity"
+          name="availableQuantity"
+          class="form-control"
+          min="0"
+          value="<%= typeof formData !== 'undefined' && formData.availableQuantity !== undefined ? formData.availableQuantity : asset.availableQuantity %>"
+          required
+        >
+        <small class="form-text">Cannot exceed total quantity.</small>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href="/assets" class="btn btn-outline-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary">Update Asset</button>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>
