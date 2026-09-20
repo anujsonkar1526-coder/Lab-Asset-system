@@ -16,21 +16,22 @@
       </p>
     </div>
 
-    <% if (user) { %>
+    <% const currentUser = (typeof user !== 'undefined' && user) ? user : null; %>
+    <% if (currentUser) { %>
       <!-- Authenticated User Dashboard Quick Access Card -->
       <div class="user-status-card">
         <div class="user-info-row">
           <div class="user-avatar-circle">
-            <%= user.name.charAt(0).toUpperCase() %>
+            <%= currentUser.name.charAt(0).toUpperCase() %>
           </div>
           <div>
-            <h2 class="welcome-heading">Welcome back, <%= user.name %>!</h2>
+            <h2 class="welcome-heading">Welcome back, <%= currentUser.name %>!</h2>
             <p class="user-meta">
-              <strong>Account:</strong> <%= user.email %> &bull;
+              <strong>Account:</strong> <%= currentUser.email %> &bull;
               <strong>Privilege:</strong> 
-              <span class="badge badge-<%= user.role %>">
+              <span class="badge badge-<%= currentUser.role %>">
                 <span class="badge-dot"></span>
-                <%= user.role.replace('_', ' ').toUpperCase() %>
+                <%= currentUser.role.replace('_', ' ').toUpperCase() %>
               </span>
             </p>
           </div>
@@ -42,9 +43,9 @@
             <div>
               <strong>Authorized Portal Access</strong>
               <p>
-                <% if (user.role === 'admin') { %>
+                <% if (currentUser.role === 'admin') { %>
                   Full administrative authority: Asset CRUD inventory, real-time analytics, equipment audits, maintenance logs, and damage/loss reporting.
-                <% } else if (user.role === 'lab_incharge') { %>
+                <% } else if (currentUser.role === 'lab_incharge') { %>
                   Departmental authority: Review pending issue requests, approve/reject allocations, issue equipment, and conduct return condition inspections.
                 <% } else { %>
                   Requester access: Browse live available laboratory equipment, raise issue requests with expected return dates, and track personal loan status.
@@ -55,14 +56,14 @@
         </div>
 
         <div class="action-buttons">
-          <% if (user.role === 'admin') { %>
+          <% if (currentUser.role === 'admin') { %>
             <a href="/dashboard/admin" class="btn btn-primary">📊 Admin Analytics Dashboard</a>
             <a href="/assets" class="btn btn-outline-primary">📦 Asset Inventory CRUD</a>
             <a href="/maintenance" class="btn btn-secondary">🔧 Maintenance Logs</a>
-          <% } else if (user.role === 'lab_incharge') { %>
+          <% } else if (currentUser.role === 'lab_incharge') { %>
             <a href="/dashboard/lab-incharge" class="btn btn-primary">📊 Lab In-charge Dashboard</a>
             <a href="/lab-incharge/requests" class="btn btn-outline-primary">📋 Manage Requests &amp; Returns</a>
-          <% } else if (user.role === 'requester') { %>
+          <% } else if (currentUser.role === 'requester') { %>
             <a href="/dashboard/requester" class="btn btn-primary">📊 Student/Staff Dashboard</a>
             <a href="/requests" class="btn btn-outline-primary">🔬 Browse Available Equipment</a>
             <a href="/requests/my" class="btn btn-secondary">📋 My Loan Requests</a>
