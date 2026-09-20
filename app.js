@@ -12,26 +12,25 @@ const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const SESSION_SECRET = process.env.SESSION_SECRET || 'lab_asset_fallback_secret_key';
 
-// Check if MONGO_URI is defined
-if (!MONGO_URI) {
-  console.error('ERROR: MONGO_URI is not defined in your .env file.');
-  process.exit(1);
-}
-
 // -------------------------------------------------------------
 // Database Connection
 // -------------------------------------------------------------
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log('MongoDB Connected');
-  })
-  .catch((err) => {
-    console.error('MongoDB Connection Error:', err.message);
-  });
+if (MONGO_URI) {
+  mongoose
+    .connect(MONGO_URI)
+    .then(() => {
+      console.log('MongoDB Connected');
+    })
+    .catch((err) => {
+      console.error('MongoDB Connection Error:', err.message);
+    });
+} else {
+  console.error('CRITICAL: MONGO_URI environment variable is not defined!');
+}
 
 // -------------------------------------------------------------
-// Trust reverse proxy in production (Render, Heroku, etc.)
+// Trust reverse proxy in production (Render, Vercel, etc.)
+// -------------------------------------------------------------
 app.set('trust proxy', 1);
 
 // View Engine & Static Files Setup
@@ -50,24 +49,27 @@ app.use(express.json());
 // Method override for PUT / DELETE in HTML forms
 app.use(methodOverride('_method'));
 
-// Session configuration with MongoDB store
-app.use(
-  session({
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: MONGO_URI,
-      collectionName: 'sessions',
-      ttl: 24 * 60 * 60, // 1 day in seconds
-    }),
-    cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 1 day in milliseconds
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-    },
-  })
-);
+// Session configuration
+const sessionConfig = {
+  secret: SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24, // 1 day in milliseconds
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+  },
+};
+
+if (MONGO_URI) {
+  sessionConfig.store = MongoStore.create({
+    mongoUrl: MONGO_URI,
+    collectionName: 'sessions',
+    ttl: 24 * 60 * 60, // 1 day in seconds
+  });
+}
+
+app.use(session(sessionConfig));
 
 // Global middleware to expose authenticated user to all EJS views
 app.use((req, res, next) => {
@@ -117,6 +119,10 @@ app.use((err, req, res, next) => {
 // -------------------------------------------------------------
 // Start Server
 // -------------------------------------------------------------
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
